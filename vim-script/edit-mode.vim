@@ -68,4 +68,4 @@ auto BufNew * call EditWithFiletype()
 auto BufNewFile * call EditWithFiletype()
 auto BufRead * call EditWithFiletype()
 
-map W :call EditWithAnother()<CR>:call EditMode()<CR>
+map <Bslash> :call EditWithAnother()<CR>:call EditMode()<CR>
