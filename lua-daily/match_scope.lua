@@ -1,14 +1,21 @@
+local function discriminate_scope(s)
+	local prefix, content, suffix = string.match(s, "^(_*)([^%s]-)(_*)$")
+	if #content == 0 then
+		return "illegal"
+	elseif #prefix == 0 then
+		return "public"
+	elseif #prefix == 1 then
+		return "protected"
+	elseif #prefix >= 2 and #suffix >= 2 then
+		return "attribute"
+	else
+		return "private"
+	end
+end
+
 local function match_scope(scope)
-	local pattern = ({
-		public = "^[^_][^%s]*$",
-		protected = "^_[^_][^%s]*$",
-		private = "^__[^%s]*[^_%s]+$",
-		attribute = "^__[^%s]+__$",
-	})[scope]
-	assert(pattern,
-		("Not found pattern for %s"):format(tostring(scope)))
 	return function(v)
-		return string.match(v, pattern)
+		return discriminate_scope(v) == scope and v or nil
 	end
 end
 
