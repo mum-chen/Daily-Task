@@ -20,104 +20,58 @@ local function match_scope(scope)
 end
 
 local Cases = {
-	"",
-	"_",
-	"__",
-	"____",
-	"f",
-	"_f",
-	"__f",
-	"__f__",
-	"f_b",
-	"_f_b",
-	"__f_b",
-	"__f__b",
-	"__f_b__",
-	"__f__b__",
-	"foo",
-	"_foo",
-	"__foo",
-	"__foo__",
-	"foo_bar",
-	"_foo_bar",
-	"__foo_bar",
-	"__foo_bar__",
-	"__foo__bar",
-	"__foo__bar__",
-	"___foo_bar",
-	"___foo__bar",
-	"___foo_bar__",
-	"___foo__bar__",
+	[""]                = "illegal",
+	["_"]               = "illegal",
+	["__"]              = "illegal",
+	["____"]            = "illegal",
+	["f"]               = "public",
+	["f_b"]             = "public",
+	["foo"]             = "public",
+	["foo_bar"]         = "public",
+	["_f"]              = "protected",
+	["_f_b"]            = "protected",
+	["_foo"]            = "protected",
+	["_foo_bar"]        = "protected",
+	["__f"]             = "private",
+	["__f_b"]           = "private",
+	["__f__b"]          = "private",
+	["__foo"]           = "private",
+	["__foo_bar"]       = "private",
+	["__foo__bar"]      = "private",
+	["___foo_bar"]      = "private",
+	["___foo__bar"]     = "private",
+	["__f__"]           = "attribute",
+	["__f_b__"]         = "attribute",
+	["__f__b__"]        = "attribute",
+	["__foo__"]         = "attribute",
+	["__foo_bar__"]     = "attribute",
+	["__foo__bar__"]    = "attribute",
+	["___foo_bar__"]    = "attribute",
+	["___foo__bar__"]   = "attribute",
 }
 
-local function reverse(t)
-	local _t = {}
-	local v
-	for _, v in ipairs(t) do
-		_t[v] = v
+local function test_case(case, scope)
+	local t = {}
+	local k, v
+	for k, v in pairs(case) do
+		t[k] =  v == scope and k or nil
 	end
-	return _t
+	return t
 end
 
-local test_case = {}
-test_case.public = {
-	func = match_scope("public"),
-	result = {
-		"f",
-		"f_b",
-		"foo",
-		"foo_bar",
-	}
-}
+local scopes = {"public", "protected", "private", "attribute"}
 
-test_case.protected = {
-	func = match_scope("protected"),
-	result = {
-		"_f",
-		"_f_b",
-		"_foo",
-		"_foo_bar",
-	},
-}
-
-test_case.private = {
-	func = match_scope("private"),
-	result = {
-		"__f",
-		"__f_b",
-		"__f__b",
-		"__foo",
-		"__foo_bar",
-		"__foo__bar",
-		"___foo_bar",
-		"___foo__bar",
-	}
-}
-
-test_case.attribute = {
-	func = match_scope("attribute"),
-	result = {
-		"__f__",
-		"__f_b__",
-		"__f__b__",
-		"__foo__",
-		"__foo_bar__",
-		"__foo__bar__",
-		"___foo_bar__",
-		"___foo__bar__",
-	}
-}
-
-local k, v
-for k, v in pairs(test_case) do
-	local f = v.func
-	local res = reverse(v.result)
-	for _, case in pairs(Cases) do
+local scope
+for _, scope in ipairs(scopes) do
+	local f = match_scope(scope)
+	local test = test_case(Cases, scope)
+	local case
+	for case, _ in pairs(Cases) do
 		local r1 = f(case)
-		local r2 = res[case]
+		local r2 = test[case]
 		assert(r1 == r2,
 			("error in %s: excpeted %s, got %s"):format(
-				k, tostring(r2), tostring(r1)))
+				scope, tostring(r2), tostring(r1)))
 	end
-	print(("------ %s success -----"):format(k))
+	print(("------ %s success -----"):format(scope))
 end
